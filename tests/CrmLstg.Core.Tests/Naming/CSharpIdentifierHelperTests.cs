@@ -1,0 +1,48 @@
+﻿using CrmLstg.Core.Naming;
+
+namespace CrmLstg.Core.Tests.Naming;
+
+public class CSharpIdentifierHelperTests
+{
+    [Theory]
+    [InlineData("account", "Account")]
+    [InlineData("new_customfield", "NewCustomfield")]
+    [InlineData("msdyn_workorder", "MsdynWorkorder")]
+    public void ToPascalCaseIdentifier_ValidLogicalName_ReturnsPascalCase(string logicalName, string expected)
+    {
+        // Arrange
+        // (parameters)
+
+        // Act
+        var result = CSharpIdentifierHelper.ToPascalCaseIdentifier(logicalName);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void ToPascalCaseIdentifier_ReservedKeyword_PrefixesWithAt()
+    {
+        // Arrange
+        const string logicalName = "class";
+
+        // Act
+        var result = CSharpIdentifierHelper.ToPascalCaseIdentifier(logicalName);
+
+        // Assert
+        Assert.Equal("@Class", result);
+    }
+
+    [Fact]
+    public void ToEnumMemberName_EmptyLabel_UsesValueSuffix()
+    {
+        // Arrange
+        const int value = 100000001;
+
+        // Act
+        var result = CSharpIdentifierHelper.ToEnumMemberName(string.Empty, value);
+
+        // Assert
+        Assert.Equal("Value100000001", result);
+    }
+}
