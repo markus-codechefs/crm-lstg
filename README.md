@@ -16,7 +16,7 @@ CRM Dynamics **late-bound strong types** generator. Console app that connects to
 
 ## Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - A Dataverse environment and an app registration or user account with permission to read solution metadata
 - A published or unmanaged solution whose entities you want to export
 
