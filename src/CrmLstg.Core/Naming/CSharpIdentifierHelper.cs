@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using Microsoft.Xrm.Sdk.Metadata;
 
 namespace CrmLstg.Core.Naming;
 
@@ -18,11 +19,70 @@ public static class CSharpIdentifierHelper
         "using", "virtual", "void", "volatile", "while",
     };
 
+    public static string ToEntityClassName(EntityMetadata entity)
+    {
+        if (!string.IsNullOrEmpty(entity.SchemaName))
+        {
+            return SanitizeIdentifier(entity.SchemaName);
+        }
+
+        return ToPascalCaseIdentifier(entity.LogicalName);
+    }
+
+    public static string ToAttributeConstantName(AttributeMetadata attribute, bool isPrimaryId, bool isPrimaryName)
+    {
+        if (isPrimaryId)
+        {
+            return "PrimaryKey";
+        }
+
+        if (isPrimaryName)
+        {
+            return "PrimaryName";
+        }
+
+        if (!string.IsNullOrEmpty(attribute.SchemaName))
+        {
+            return SanitizeIdentifier(attribute.SchemaName);
+        }
+
+        return ToAttributeConstantName(attribute.LogicalName, isPrimaryId, isPrimaryName);
+    }
+
+    public static string ToAttributeConstantName(string logicalName, bool isPrimaryId, bool isPrimaryName)
+    {
+        if (isPrimaryId)
+        {
+            return "PrimaryKey";
+        }
+
+        if (isPrimaryName)
+        {
+            return "PrimaryName";
+        }
+
+        return ToPascalCaseIdentifier(logicalName);
+    }
+
+    public static string ToOptionSetEnumName(string schemaOrLogicalName)
+    {
+        var baseName = schemaOrLogicalName.Contains('_', StringComparison.Ordinal)
+            ? ToPascalCaseIdentifier(schemaOrLogicalName)
+            : SanitizeIdentifier(schemaOrLogicalName);
+
+        return baseName + "_OptionSet";
+    }
+
     public static string ToPascalCaseIdentifier(string logicalName)
     {
         if (string.IsNullOrWhiteSpace(logicalName))
         {
             return "Unknown";
+        }
+
+        if (!logicalName.Contains('_', StringComparison.Ordinal) && char.IsUpper(logicalName[0]))
+        {
+            return SanitizeIdentifier(logicalName);
         }
 
         var segments = logicalName.Split('_', StringSplitOptions.RemoveEmptyEntries);
@@ -45,44 +105,7 @@ public static class CSharpIdentifierHelper
 
         var identifier = builder.Length == 0 ? "Unknown" : builder.ToString();
 
-        if (char.IsDigit(identifier[0]))
-        {
-            identifier = "_" + identifier;
-        }
-
-        if (ReservedKeywords.Contains(identifier) || ReservedKeywords.Contains(identifier.ToLowerInvariant()))
-        {
-            identifier = "@" + identifier;
-        }
-
-        return identifier;
-    }
-
-    public static string ToClassName(string entityLogicalName)
-    {
-        return ToPascalCaseIdentifier(entityLogicalName);
-    }
-
-    public static string ToFieldConstantName(string attributeLogicalName)
-    {
-        return ToPascalCaseIdentifier(attributeLogicalName);
-    }
-
-    public static string ToEnumName(string optionSetName, string? prefix = null)
-    {
-        var name = ToPascalCaseIdentifier(optionSetName);
-
-        if (!string.IsNullOrEmpty(prefix) && !name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-        {
-            name = prefix + name;
-        }
-
-        if (!name.EndsWith("Option", StringComparison.Ordinal))
-        {
-            name += "Option";
-        }
-
-        return name;
+        return SanitizeIdentifier(identifier);
     }
 
     public static string ToEnumMemberName(string label, int value)
@@ -100,7 +123,7 @@ public static class CSharpIdentifierHelper
             {
                 cleaned.Append(ch);
             }
-            else if (char.IsWhiteSpace(ch) || ch is '-' or '/')
+            else if (char.IsWhiteSpace(ch) || ch is '-' or '/' or '.')
             {
                 cleaned.Append('_');
             }
@@ -119,5 +142,20 @@ public static class CSharpIdentifierHelper
         }
 
         return member;
+    }
+
+    private static string SanitizeIdentifier(string identifier)
+    {
+        if (char.IsDigit(identifier[0]))
+        {
+            identifier = "_" + identifier;
+        }
+
+        if (ReservedKeywords.Contains(identifier) || ReservedKeywords.Contains(identifier.ToLowerInvariant()))
+        {
+            identifier = "@" + identifier;
+        }
+
+        return identifier;
     }
 }

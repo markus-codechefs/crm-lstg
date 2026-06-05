@@ -27,7 +27,7 @@ public sealed class EntityMetadataProvider
             var request = new RetrieveEntityRequest
             {
                 MetadataId = metadataId,
-                EntityFilters = EntityFilters.Attributes,
+                EntityFilters = EntityFilters.Attributes | EntityFilters.Relationships,
                 RetrieveAsIfPublished = true,
             };
 

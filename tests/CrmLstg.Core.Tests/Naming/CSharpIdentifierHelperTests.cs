@@ -1,9 +1,27 @@
 ﻿using CrmLstg.Core.Naming;
+using Microsoft.Xrm.Sdk.Metadata;
 
 namespace CrmLstg.Core.Tests.Naming;
 
 public class CSharpIdentifierHelperTests
 {
+    [Fact]
+    public void ToAttributeConstantName_PrimaryId_ReturnsPrimaryKey()
+    {
+        // Arrange
+        var attribute = new StringAttributeMetadata
+        {
+            LogicalName = "bkw_contactpointid",
+            SchemaName = "BkwContactpointId",
+        };
+
+        // Act
+        var result = CSharpIdentifierHelper.ToAttributeConstantName(attribute, isPrimaryId: true, isPrimaryName: false);
+
+        // Assert
+        Assert.Equal("PrimaryKey", result);
+    }
+
     [Theory]
     [InlineData("account", "Account")]
     [InlineData("new_customfield", "NewCustomfield")]

@@ -51,7 +51,7 @@ public sealed class TypeGenerationService
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var className = Naming.CSharpIdentifierHelper.ToClassName(entity.LogicalName);
+            var className = Naming.CSharpIdentifierHelper.ToEntityClassName(entity);
             var filePath = Path.Combine(entitiesDirectory, className + ".cs");
             var source = codeGenerator.GenerateEntityFile(entity);
 

@@ -32,14 +32,9 @@ internal static class Program
             getDefaultValue: () => "Crm.Generated",
             description: "Root namespace for generated types.");
 
-        var virtualAttributesOption = new Option<bool>(
-            aliases: new[] { "--include-virtual-attributes" },
-            description: "Include virtual attributes in generated types.");
-
-        var sdkTypesOption = new Option<bool>(
-            aliases: new[] { "--use-sdk-types" },
-            getDefaultValue: () => true,
-            description: "Use Microsoft.Xrm.Sdk types (EntityReference, Money, OptionSetValue) in generated properties.");
+        var excludeVirtualAttributesOption = new Option<bool>(
+            aliases: new[] { "--exclude-virtual-attributes" },
+            description: "Exclude virtual attributes from generated entity constants.");
 
         var optionSetEnumsOption = new Option<bool>(
             aliases: new[] { "--option-set-enums" },
@@ -53,8 +48,7 @@ internal static class Program
             solutionOption,
             outputOption,
             namespaceOption,
-            virtualAttributesOption,
-            sdkTypesOption,
+            excludeVirtualAttributesOption,
             optionSetEnumsOption,
         };
 
@@ -66,8 +60,7 @@ internal static class Program
                 SolutionUniqueName = context.ParseResult.GetValueForOption(solutionOption)!,
                 OutputDirectory = Path.GetFullPath(context.ParseResult.GetValueForOption(outputOption)!),
                 Namespace = context.ParseResult.GetValueForOption(namespaceOption)!,
-                IncludeVirtualAttributes = context.ParseResult.GetValueForOption(virtualAttributesOption),
-                UseSdkTypes = context.ParseResult.GetValueForOption(sdkTypesOption),
+                IncludeVirtualAttributes = !context.ParseResult.GetValueForOption(excludeVirtualAttributesOption),
                 GenerateOptionSetEnums = context.ParseResult.GetValueForOption(optionSetEnumsOption),
             };
 

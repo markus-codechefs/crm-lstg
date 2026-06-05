@@ -6,11 +6,12 @@ CRM Dynamics **late-bound strong types** generator. Console app that connects to
 
 - Connects with a standard Dataverse connection string (`Microsoft.PowerPlatform.Dataverse.Client`)
 - Filters entities by **solution unique name** (`solutioncomponent` where `componenttype = Entity`)
-- Generates per-entity static classes with:
-  - `EntityLogicalName`, `EntitySetName`, `EntityTypeCode`
-  - `Fields` — string constants for attribute logical names
-  - `OptionSets` — nested enums for picklist/state/status attributes (optional)
-  - `Record` — POCO with typed properties for late-bound / SDK usage
+- Generates per-entity static classes in **EntityConstants** style:
+  - Class summary with display name, ownership type, introduced version
+  - `EntityName` and `EntityCollectionName` constants
+  - `#region Attributes` with XML doc summaries and schema-based constant names (`PrimaryKey`, `PrimaryName`, …)
+  - `#region Relationships` with `RelM1_` / `Rel1M_` / `RelMM_` relationship schema constants
+  - `#region OptionSets` with `{Attribute}_OptionSet` enums
 - Output files use **UTF-8 with BOM**
 
 ## Prerequisites
@@ -43,9 +44,8 @@ dotnet run --project src/CrmLstg.Console/CrmLstg.Console.csproj -- \
 | `--solution` | `-s` | Solution unique name (required) |
 | `--output` | `-o` | Output folder (default: `./Generated`) |
 | `--namespace` | `-n` | C# namespace (default: `Crm.Generated`) |
-| `--include-virtual-attributes` | | Include virtual attributes |
-| `--use-sdk-types` | | Use `EntityReference`, `Money`, `OptionSetValue` (default: true) |
-| `--option-set-enums` | | Emit nested option set enums (default: true) |
+| `--exclude-virtual-attributes` | | Skip virtual attributes (included by default) |
+| `--option-set-enums` | | Emit option set enums (default: true) |
 
 ### Connection string examples
 
@@ -75,23 +75,28 @@ Generated/
 Example excerpt:
 
 ```csharp
-public static partial class Account
+/// <summary>DisplayName: Account, OwnershipType: UserOwned, IntroducedVersion: 1.0</summary>
+public static class Account
 {
-    public const string EntityLogicalName = "account";
+    public const string EntityName = "account";
+    public const string EntityCollectionName = "accounts";
 
-    public static class Fields
-    {
-        public const string Name = "name";
-    }
+    #region Attributes
 
-    public sealed class Record
-    {
-        public string? Name { get; set; }
-    }
+    /// <summary>Type: Uniqueidentifier, RequiredLevel: SystemRequired</summary>
+    public const string PrimaryKey = "accountid";
+    /// <summary>Type: String, RequiredLevel: None, MaxLength: 160, Format: Text</summary>
+    public const string PrimaryName = "name";
+
+    #endregion Attributes
+
+    #region OptionSets
+    // ...
+    #endregion OptionSets
 }
 ```
 
-Use `Fields` constants with late-bound `Entity` / `ColumnSet` APIs to avoid string typos, and `Record` for strongly typed in-memory shapes.
+Use attribute constants with late-bound `Entity` / `ColumnSet` / `QueryExpression` APIs to avoid string typos.
 
 ## Tests
 
