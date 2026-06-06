@@ -1,4 +1,5 @@
-﻿using CrmLstg.Core.Configuration;
+﻿using CrmLstg.Console.Configuration;
+using CrmLstg.Core.Configuration;
 using CrmLstg.Core.Generation;
 using System.CommandLine;
 
@@ -8,11 +9,13 @@ internal static class Program
 {
     public static async Task<int> Main(string[] args)
     {
+        var configuration = AppConfiguration.Build();
+
         var connectionOption = new Option<string>(
             aliases: new[] { "--connection-string", "-c" },
-            description: "Dataverse connection string (AuthType=ClientSecret or OAuth).")
+            description: "Dataverse connection string (AuthType=ClientSecret or OAuth). Overrides configuration.")
         {
-            IsRequired = true,
+            IsRequired = false,
         };
 
         var solutionOption = new Option<string>(
@@ -54,9 +57,21 @@ internal static class Program
 
         rootCommand.SetHandler(async (context) =>
         {
+            var connectionString = ConnectionStringResolver.Resolve(
+                context.ParseResult.GetValueForOption(connectionOption),
+                configuration["ConnectionStrings:Dataverse"]);
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "Connection string is required. Provide --connection-string, set ConnectionStrings:Dataverse in appsettings.json, " +
+                    "use dotnet user-secrets set \"ConnectionStrings:Dataverse\" \"<connection-string>\", " +
+                    "or set the ConnectionStrings__Dataverse environment variable.");
+            }
+
             var options = new GeneratorOptions
             {
-                ConnectionString = context.ParseResult.GetValueForOption(connectionOption)!,
+                ConnectionString = connectionString,
                 SolutionUniqueName = context.ParseResult.GetValueForOption(solutionOption)!,
                 OutputDirectory = Path.GetFullPath(context.ParseResult.GetValueForOption(outputOption)!),
                 Namespace = context.ParseResult.GetValueForOption(namespaceOption)!,
