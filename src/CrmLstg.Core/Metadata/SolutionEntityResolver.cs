@@ -14,6 +14,39 @@ public sealed class SolutionEntityResolver
         _organizationService = organizationService;
     }
 
+    public IReadOnlyList<SolutionSummary> GetSolutionsByUniqueNamePrefix(string uniqueNamePrefix)
+    {
+        var query = new QueryExpression("solution")
+        {
+            ColumnSet = new ColumnSet("uniquename", "friendlyname", "version"),
+            Criteria =
+            {
+                Conditions =
+                {
+                    new ConditionExpression("uniquename", ConditionOperator.BeginsWith, uniqueNamePrefix),
+                },
+            },
+            Orders =
+            {
+                new OrderExpression("uniquename", OrderType.Ascending),
+            },
+        };
+
+        var results = _organizationService.RetrieveMultiple(query);
+        var solutions = new List<SolutionSummary>(results.Entities.Count);
+
+        foreach (var solution in results.Entities)
+        {
+            var uniqueName = solution.GetAttributeValue<string>("uniquename") ?? string.Empty;
+            var friendlyName = solution.GetAttributeValue<string>("friendlyname") ?? string.Empty;
+            var version = solution.GetAttributeValue<string>("version") ?? string.Empty;
+
+            solutions.Add(new SolutionSummary(uniqueName, friendlyName, version));
+        }
+
+        return solutions;
+    }
+
     public Guid ResolveSolutionId(string solutionUniqueName)
     {
         var query = new QueryExpression("solution")

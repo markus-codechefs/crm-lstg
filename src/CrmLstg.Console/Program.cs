@@ -1,6 +1,8 @@
 ﻿using CrmLstg.Console.Configuration;
 using CrmLstg.Core.Configuration;
 using CrmLstg.Core.Generation;
+using CrmLstg.Core.Metadata;
+using Microsoft.PowerPlatform.Dataverse.Client;
 using System.CommandLine;
 
 namespace CrmLstg.Console;
@@ -20,10 +22,7 @@ internal static class Program
 
         var solutionOption = new Option<string>(
             aliases: new[] { "--solution", "-s" },
-            description: "Unique name of the Dynamics solution to export entities from.")
-        {
-            IsRequired = true,
-        };
+            description: "Unique name of the Dynamics solution to export entities from. Overrides configuration.");
 
         var outputOption = new Option<string>(
             aliases: new[] { "--output", "-o" },
@@ -69,10 +68,33 @@ internal static class Program
                     "or set the ConnectionStrings__Dataverse environment variable.");
             }
 
+            var solutionUniqueName = SolutionUniqueNameResolver.Resolve(
+                context.ParseResult.GetValueForOption(solutionOption),
+                configuration["CrmLstg:Solution"]);
+
+            if (string.IsNullOrWhiteSpace(solutionUniqueName))
+            {
+                using var serviceClient = new ServiceClient(connectionString);
+
+                if (!serviceClient.IsReady)
+                {
+                    throw new InvalidOperationException($"Failed to connect to Dataverse: {serviceClient.LastError}");
+                }
+
+                var solutionResolver = new SolutionEntityResolver(serviceClient);
+                var availableSolutions = solutionResolver.GetSolutionsByUniqueNamePrefix(
+                    AvailableSolutionsFormatter.DefaultSolutionUniqueNamePrefix);
+
+                throw new InvalidOperationException(
+                    AvailableSolutionsFormatter.FormatMissingSolutionMessage(
+                        availableSolutions,
+                        AvailableSolutionsFormatter.DefaultSolutionUniqueNamePrefix));
+            }
+
             var options = new GeneratorOptions
             {
                 ConnectionString = connectionString,
-                SolutionUniqueName = context.ParseResult.GetValueForOption(solutionOption)!,
+                SolutionUniqueName = solutionUniqueName,
                 OutputDirectory = Path.GetFullPath(context.ParseResult.GetValueForOption(outputOption)!),
                 Namespace = context.ParseResult.GetValueForOption(namespaceOption)!,
                 IncludeVirtualAttributes = !context.ParseResult.GetValueForOption(excludeVirtualAttributesOption),
