@@ -6,3 +6,5 @@ Generated/
 *.user
 *.suo
 .DS_Store
+secrets.json
+*.secrets.json

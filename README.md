@@ -30,22 +30,59 @@ dotnet build CrmLstg.slnx
 
 ```bash
 dotnet run --project src/CrmLstg.Console/CrmLstg.Console.csproj -- \
-  --connection-string "AuthType=ClientSecret;Url=https://org.crm.dynamics.com;ClientId=...;ClientSecret=...;" \
   --solution "MySolutionUniqueName" \
   --output "./Generated" \
   --namespace "MyCompany.Crm.Generated"
 ```
 
+The connection string can be supplied via CLI, configuration, user secrets, or environment variables (see [Configuration](#configuration)).
+
 ### Options
 
 | Option | Alias | Description |
 |--------|-------|-------------|
-| `--connection-string` | `-c` | Dataverse connection string (required) |
+| `--connection-string` | `-c` | Dataverse connection string (overrides configuration) |
 | `--solution` | `-s` | Solution unique name (required) |
 | `--output` | `-o` | Output folder (default: `./Generated`) |
 | `--namespace` | `-n` | C# namespace (default: `Crm.Generated`) |
 | `--exclude-virtual-attributes` | | Skip virtual attributes (included by default) |
 | `--option-set-enums` | | Emit option set enums (default: true) |
+
+### Configuration
+
+Connection strings are resolved in this order (highest precedence first):
+
+1. `--connection-string` / `-c` CLI argument
+2. `ConnectionStrings__Dataverse` environment variable
+3. User secrets (`ConnectionStrings:Dataverse`)
+4. `appsettings.{Environment}.json`
+5. `appsettings.json`
+
+Set `DOTNET_ENVIRONMENT` or `ASPNETCORE_ENVIRONMENT` to `Development` to load `appsettings.Development.json`.
+
+**appsettings.json** (committed, no secrets):
+
+```json
+{
+  "ConnectionStrings": {
+    "Dataverse": ""
+  }
+}
+```
+
+**Local development with user secrets** (stored outside the repo):
+
+```bash
+dotnet user-secrets set "ConnectionStrings:Dataverse" \
+  "AuthType=ClientSecret;Url=https://org.crm.dynamics.com;ClientId=...;ClientSecret=...;" \
+  --project src/CrmLstg.Console/CrmLstg.Console.csproj
+```
+
+**CI/CD with environment variable:**
+
+```bash
+export ConnectionStrings__Dataverse="AuthType=ClientSecret;Url=...;ClientId=...;ClientSecret=...;"
+```
 
 ### Connection string examples
 
