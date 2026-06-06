@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CrmLstg.Console/CrmLstg.Console.csproj" />
+    <Project Path="src/CrmLstg.Core/CrmLstg.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CrmLstg.Core.Tests/CrmLstg.Core.Tests.csproj" />
+  </Folder>
+</Solution>

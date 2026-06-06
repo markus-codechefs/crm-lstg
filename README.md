@@ -23,7 +23,7 @@ CRM Dynamics **late-bound strong types** generator. Console app that connects to
 ## Build
 
 ```bash
-dotnet build CrmLstg.sln
+dotnet build CrmLstg.slnx
 ```
 
 ## Usage
@@ -101,7 +101,7 @@ Use attribute constants with late-bound `Entity` / `ColumnSet` / `QueryExpressio
 ## Tests
 
 ```bash
-dotnet test CrmLstg.sln
+dotnet test CrmLstg.slnx
 ```
 
 ## Related tools
