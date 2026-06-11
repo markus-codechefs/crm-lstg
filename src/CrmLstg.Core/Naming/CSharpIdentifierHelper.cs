@@ -29,7 +29,11 @@ public static class CSharpIdentifierHelper
         return ToPascalCaseIdentifier(entity.LogicalName);
     }
 
-    public static string ToAttributeConstantName(AttributeMetadata attribute, bool isPrimaryId, bool isPrimaryName)
+    public static string ToAttributeConstantName(
+        AttributeMetadata attribute,
+        bool isPrimaryId,
+        bool isPrimaryName,
+        bool isPrimaryImage = false)
     {
         if (isPrimaryId)
         {
@@ -39,6 +43,11 @@ public static class CSharpIdentifierHelper
         if (isPrimaryName)
         {
             return "PrimaryName";
+        }
+
+        if (isPrimaryImage)
+        {
+            return "PrimaryImage";
         }
 
         if (!string.IsNullOrEmpty(attribute.SchemaName))
@@ -46,10 +55,14 @@ public static class CSharpIdentifierHelper
             return SanitizeIdentifier(attribute.SchemaName);
         }
 
-        return ToAttributeConstantName(attribute.LogicalName, isPrimaryId, isPrimaryName);
+        return ToAttributeConstantName(attribute.LogicalName, isPrimaryId, isPrimaryName, isPrimaryImage);
     }
 
-    public static string ToAttributeConstantName(string logicalName, bool isPrimaryId, bool isPrimaryName)
+    public static string ToAttributeConstantName(
+        string logicalName,
+        bool isPrimaryId,
+        bool isPrimaryName,
+        bool isPrimaryImage = false)
     {
         if (isPrimaryId)
         {
@@ -59,6 +72,11 @@ public static class CSharpIdentifierHelper
         if (isPrimaryName)
         {
             return "PrimaryName";
+        }
+
+        if (isPrimaryImage)
+        {
+            return "PrimaryImage";
         }
 
         return ToPascalCaseIdentifier(logicalName);

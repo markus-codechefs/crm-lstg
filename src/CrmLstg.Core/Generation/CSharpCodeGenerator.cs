@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using CrmLstg.Core.Configuration;
+using CrmLstg.Core.Metadata;
 using CrmLstg.Core.Naming;
 using Microsoft.Xrm.Sdk.Metadata;
 
@@ -78,7 +79,8 @@ public sealed class CSharpCodeGenerator
             var constantName = CSharpIdentifierHelper.ToAttributeConstantName(
                 attribute,
                 attribute.IsPrimaryId == true,
-                attribute.IsPrimaryName == true);
+                attribute.IsPrimaryName == true,
+                PrimaryAttributeHelper.IsPrimaryImage(entity, attribute));
 
             var summary = AttributeMetadataSummaryBuilder.Build(attribute);
 
@@ -139,21 +141,27 @@ public sealed class CSharpCodeGenerator
     private IEnumerable<AttributeMetadata> GetOrderedAttributes(EntityMetadata entity)
     {
         var attributes = entity.Attributes?
-            .Where(ShouldIncludeAttribute)
+            .Where(attribute => ShouldIncludeAttribute(entity, attribute))
             .ToList()
             ?? new List<AttributeMetadata>();
 
         return attributes
-            .OrderBy(attribute => GetAttributeSortKey(attribute))
+            .OrderBy(attribute => GetAttributeSortKey(entity, attribute))
             .ThenBy(attribute => CSharpIdentifierHelper.ToAttributeConstantName(
                 attribute,
                 attribute.IsPrimaryId == true,
-                attribute.IsPrimaryName == true),
+                attribute.IsPrimaryName == true,
+                PrimaryAttributeHelper.IsPrimaryImage(entity, attribute)),
                 StringComparer.Ordinal);
     }
 
-    private bool ShouldIncludeAttribute(AttributeMetadata attribute)
+    private bool ShouldIncludeAttribute(EntityMetadata entity, AttributeMetadata attribute)
     {
+        if (attribute is ImageAttributeMetadata || PrimaryAttributeHelper.IsPrimaryImage(entity, attribute))
+        {
+            return true;
+        }
+
         if (attribute.AttributeType == AttributeTypeCode.Virtual && !_options.IncludeVirtualAttributes)
         {
             return false;
@@ -167,7 +175,7 @@ public sealed class CSharpCodeGenerator
             || attribute.IsLogical == true;
     }
 
-    private static int GetAttributeSortKey(AttributeMetadata attribute)
+    private static int GetAttributeSortKey(EntityMetadata entity, AttributeMetadata attribute)
     {
         if (attribute.IsPrimaryId == true)
         {
@@ -179,7 +187,12 @@ public sealed class CSharpCodeGenerator
             return 1;
         }
 
-        return 2;
+        if (PrimaryAttributeHelper.IsPrimaryImage(entity, attribute))
+        {
+            return 2;
+        }
+
+        return 3;
     }
 
     private static void AppendFileHeader(StringBuilder builder)

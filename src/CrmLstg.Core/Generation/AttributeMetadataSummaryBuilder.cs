@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.Xrm.Sdk.Metadata;
 
 namespace CrmLstg.Core.Generation;
@@ -24,6 +24,11 @@ public static class AttributeMetadataSummaryBuilder
 
     private static string GetTypeDescription(AttributeMetadata attribute)
     {
+        if (attribute is ImageAttributeMetadata)
+        {
+            return "Image";
+        }
+
         var typeName = attribute.AttributeType?.ToString() ?? "Unknown";
 
         if (IsLogicalAttribute(attribute))
@@ -91,6 +96,9 @@ public static class AttributeMetadataSummaryBuilder
                 break;
             case EnumAttributeMetadata enumAttribute:
                 AppendOptionSetParts(enumAttribute, parts);
+                break;
+            case ImageAttributeMetadata imageAttribute:
+                parts.Add("MaxSizeInKB: " + imageAttribute.MaxSizeInKB);
                 break;
         }
     }

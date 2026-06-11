@@ -9,7 +9,7 @@ CRM Dynamics **late-bound strong types** generator. Console app that connects to
 - Generates per-entity static classes in **EntityConstants** style:
   - Class summary with display name, ownership type, introduced version
   - `EntityName` and `EntityCollectionName` constants
-  - `#region Attributes` with XML doc summaries and schema-based constant names (`PrimaryKey`, `PrimaryName`, …)
+  - `#region Attributes` with XML doc summaries and schema-based constant names (`PrimaryKey`, `PrimaryName`, `PrimaryImage`, …)
   - `#region Relationships` with `RelM1_` / `Rel1M_` / `RelMM_` relationship schema constants
   - `#region OptionSets` with `{Attribute}_OptionSet` enums
 - Output files use **UTF-8 with BOM**
@@ -124,6 +124,8 @@ public static class Account
     public const string PrimaryKey = "accountid";
     /// <summary>Type: String, RequiredLevel: None, MaxLength: 160, Format: Text</summary>
     public const string PrimaryName = "name";
+    /// <summary>Type: Image, MaxSizeInKB: 10240</summary>
+    public const string PrimaryImage = "entityimage";
 
     #endregion Attributes
 

@@ -1,4 +1,5 @@
-using System.Text;
+﻿using System.Text;
+using CrmLstg.Core.Metadata;
 using CrmLstg.Core.Naming;
 using Microsoft.Xrm.Sdk.Metadata;
 
@@ -121,7 +122,8 @@ public static class RelationshipConstantsGenerator
             return CSharpIdentifierHelper.ToAttributeConstantName(
                 attribute,
                 attribute.IsPrimaryId == true,
-                attribute.IsPrimaryName == true);
+                attribute.IsPrimaryName == true,
+                PrimaryAttributeHelper.IsPrimaryImage(entity, attribute));
         }
 
         return CSharpIdentifierHelper.ToAttributeConstantName(
