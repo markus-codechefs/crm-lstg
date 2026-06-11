@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using CrmLstg.Core.Configuration;
 using CrmLstg.Core.Generation;
 using CrmLstg.Core.Tests.Helpers;
@@ -116,6 +116,69 @@ public class CSharpCodeGeneratorTests
         Assert.Contains("public enum BkwPortal_OptionSet", source);
         Assert.DoesNotContain("class Record", source);
         Assert.DoesNotContain("class Fields", source);
+    }
+
+    [Fact]
+    public void GenerateEntityFile_EntityWithPrimaryImage_ContainsPrimaryImageConstant()
+    {
+        // Arrange
+        var options = new GeneratorOptions
+        {
+            Namespace = "MyCompany.Crm.Generated",
+            GenerateOptionSetEnums = false,
+            IncludeVirtualAttributes = false,
+        };
+
+        var entity = new EntityMetadata
+        {
+            LogicalName = "account",
+            SchemaName = "Account",
+            EntitySetName = "accounts",
+        };
+
+        MetadataReflection.SetProperty(entity, "PrimaryImageAttribute", "entityimage");
+
+        var primaryId = new StringAttributeMetadata
+        {
+            LogicalName = "accountid",
+            SchemaName = "AccountId",
+        };
+
+        MetadataReflection.SetProperty(primaryId, "IsPrimaryId", true);
+        MetadataReflection.SetProperty(primaryId, "IsValidForRead", true);
+
+        var primaryName = new StringAttributeMetadata
+        {
+            LogicalName = "name",
+            SchemaName = "Name",
+        };
+
+        MetadataReflection.SetProperty(primaryName, "IsPrimaryName", true);
+        MetadataReflection.SetProperty(primaryName, "IsValidForRead", true);
+
+        var primaryImage = new ImageAttributeMetadata
+        {
+            LogicalName = "entityimage",
+            SchemaName = "EntityImage",
+        };
+
+        MetadataReflection.SetProperty(primaryImage, "IsPrimaryImage", true);
+        MetadataReflection.SetProperty(primaryImage, "MaxSizeInKB", 10240);
+
+        MetadataReflection.SetProperty(
+            entity,
+            "Attributes",
+            new AttributeMetadata[] { primaryId, primaryName, primaryImage });
+
+        var generator = new CSharpCodeGenerator(options);
+
+        // Act
+        var source = generator.GenerateEntityFile(entity);
+
+        // Assert
+        Assert.Contains("public const string PrimaryImage = \"entityimage\";", source);
+        Assert.Contains("Type: Image", source);
+        Assert.Contains("MaxSizeInKB: 10240", source);
     }
 
     [Fact]

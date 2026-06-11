@@ -33,6 +33,7 @@ public sealed class CSharpTypeMapper
             AttributeTypeCode.String => "string?",
             AttributeTypeCode.Uniqueidentifier => "Guid?",
             AttributeTypeCode.CalendarRules => "IEnumerable<object>?",
+            AttributeTypeCode.Virtual when attribute is ImageAttributeMetadata => "byte[]?",
             AttributeTypeCode.Virtual => "object?",
             AttributeTypeCode.ManagedProperty => "bool?",
             AttributeTypeCode.EntityName => "string?",

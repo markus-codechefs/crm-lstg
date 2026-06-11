@@ -6,6 +6,27 @@ namespace CrmLstg.Core.Tests.Naming;
 public class CSharpIdentifierHelperTests
 {
     [Fact]
+    public void ToAttributeConstantName_PrimaryImage_ReturnsPrimaryImage()
+    {
+        // Arrange
+        var attribute = new ImageAttributeMetadata
+        {
+            LogicalName = "entityimage",
+            SchemaName = "EntityImage",
+        };
+
+        // Act
+        var result = CSharpIdentifierHelper.ToAttributeConstantName(
+            attribute,
+            isPrimaryId: false,
+            isPrimaryName: false,
+            isPrimaryImage: true);
+
+        // Assert
+        Assert.Equal("PrimaryImage", result);
+    }
+
+    [Fact]
     public void ToAttributeConstantName_PrimaryId_ReturnsPrimaryKey()
     {
         // Arrange
